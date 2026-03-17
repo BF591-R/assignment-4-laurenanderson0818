@@ -1,5 +1,6 @@
 ---
-title: Assignment 3
+title: Assignment 4
+author: Lauren Anderson
 output: html_document
 ---
 
@@ -120,9 +121,9 @@ figures. Until you've completed all the parts, you may safely leave these
 captions blank.
 
 ```{r code block to create descriptive captions}
-caption_4 <- 'Descriptive Caption for part 4 here'
-caption_5 <- 'Descriptive Caption for part 5 here'
-caption_8 <- 'Descriptive Caption for part 8 here'
+caption_4 <- "Variance explained by each principal component and cumulative variance explained. PC1 shows the largest proportion of variance, with other PCs showing progressively less. The cumulative curve indicates how many PCs are required to explain the majority of variability in the dataset."
+caption_5 <- "Scatter plot of the first two principal components (PC1 vs. PC2), with samples colored by SixSubtypesClassification. This plot shows how samples cluster based on the primary sources of variation in the data."
+caption_8 <- "Heatmap of normalized intensity values for significantly differentially expressed probes (FDR < 0.01). Rows represent probes and columns represent samples, with hierarchical clustering applied to both. Color intensity reflects expression levels, revealing patterns and potential clustering among samples and genes."
 ```
 
 ## 4. Plot the variance explained and cumulative variance for the PCs
@@ -141,7 +142,24 @@ numeric ordering.
 
 ```{r code block to plot variance explained and cumulative variance explained, fig.cap = caption_4}
 #Create a ggplot2 with the plot described above, refer to the reference report
+ls_cols <- c('Cumulative'='black')
+bar_cols <-c('Variance Explained'='light blue')
 
+variance_tibble$principal_components <- factor(
+  variance_tibble$principal_components,
+  levels = paste0("PC", seq_along(variance_tibble$principal_components))
+)
+
+  variance_tibble %>%
+    ggplot() + 
+    geom_bar(aes(x=principal_components, y=variance_explained, fill='Variance Explained'), stat='identity', color='black') + 
+    geom_line(aes(x=principal_components, y=cumulative, group=1, color='Cumulative')) +
+    geom_point(aes(x=principal_components, y=cumulative, group=1, color='Cumulative')) +
+    scale_colour_manual(name="Cumulative",values=ls_cols) +
+    scale_fill_manual(name="Variance Explained",values=bar_cols) +
+    labs(x='PC', y='% variance') +
+    theme_classic(base_size=8) + 
+    theme(axis.text.x=element_text(angle=90,hjust=1))
 ```
 
 
@@ -194,9 +212,14 @@ diff_exp_tibble <- readr::read_csv("data/differential_expression_results.csv",
                                    skip=1,
                                    col_names=c("probeid","t","p","padj")
                                    )
+```
 
+```{r}
 sig_ids <- list_significant_probes(diff_exp_tibble, .01)
 head(sig_ids)
+```
+
+```{r}
 length(sig_ids)
 ```
 
@@ -236,4 +259,3 @@ besides `col`.
 ```{r code block to plot heatmap of normalized intensity values for DE probes, fig.cap = caption_8}
 plot_heatmap(de_intensity, 11, 'RdBu')
 ```
-
